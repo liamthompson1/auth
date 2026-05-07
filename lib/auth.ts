@@ -53,50 +53,39 @@ export function isAllowedReturnHost(url: string) {
 }
 
 /**
- * Forward all HX cookies from the API response onto our NextResponse.
- * Also mirrors auth_session as auth_token (with domain=holidayextras.com)
- * because HX sets auth_token separately but with the same value.
+ * Forward all HX cookies from the API response directly as raw Set-Cookie headers
+ * (bypassing Next.js encoding). Also mirrors auth_session → auth_token for .holidayextras.com.
  */
 export function forwardHxCookies(res: import('next/server').NextResponse, rawCookies: string[]) {
-  // Cookies we skip (internal HX infra cookies that aren't useful cross-domain)
-  const SKIP = new Set(['_ga', '_gid', '_fbp'])
+  const SKIP = new Set(['_ga', '_gid', '_fbp', '_gcl_au'])
+  const secure = process.env.NODE_ENV === 'production' ? '; Secure' : ''
   let authSessionValue: string | null = null
 
   for (const cookieStr of rawCookies) {
-    const [nameValue, ...rest] = cookieStr.split(';')
-    const eqIdx = nameValue.indexOf('=')
+    const eqIdx = cookieStr.indexOf('=')
     if (eqIdx === -1) continue
-    const name = nameValue.slice(0, eqIdx).trim()
-    const value = nameValue.slice(eqIdx + 1).trim()
+    const name = cookieStr.slice(0, eqIdx).trim()
     if (SKIP.has(name)) continue
 
-    // Parse MaxAge from the original cookie if present
-    const maxAgeStr = rest.find(p => p.trim().toLowerCase().startsWith('max-age='))
-    const maxAge = maxAgeStr ? parseInt(maxAgeStr.split('=')[1]) : 60 * 60 * 24 * 30
+    // Extract value (between = and first ;)
+    const firstSemi = cookieStr.indexOf(';')
+    const value = cookieStr.slice(eqIdx + 1, firstSemi === -1 ? undefined : firstSemi).trim()
 
-    res.cookies.set(name, value, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge,
-    })
+    // Set with clean attributes — strip original domain/path, use our own
+    res.headers.append(
+      'Set-Cookie',
+      `${name}=${value}; Path=/; Max-Age=${60 * 60 * 24 * 30}; HttpOnly; SameSite=Lax${secure}`,
+    )
 
     if (name === 'auth_session') authSessionValue = value
   }
 
-  // auth_token is the same value as auth_session but scoped to .holidayextras.com
-  // so it's visible across all subdomains. HX doesn't return it from the API but
-  // the website expects it. We set it ourselves.
+  // Set auth_token = auth_session value, scoped to .holidayextras.com so all subdomains see it
   if (authSessionValue) {
-    res.cookies.set('auth_token', authSessionValue, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      domain: 'holidayextras.com',
-      maxAge: 60 * 60 * 24 * 30,
-    })
+    res.headers.append(
+      'Set-Cookie',
+      `auth_token=${authSessionValue}; Path=/; Max-Age=${60 * 60 * 24 * 30}; HttpOnly; SameSite=Lax; Domain=holidayextras.com${secure}`,
+    )
   }
 }
 
