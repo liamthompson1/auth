@@ -6,7 +6,7 @@ import { basePath } from '@/lib/basePath'
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-gray-50" />}>
+    <Suspense fallback={<div className="flex-1 bg-[#F5F5F5]" />}>
       <LoginContent />
     </Suspense>
   )
@@ -57,7 +57,6 @@ function LoginContent() {
     setAnimating(true); setTimeout(() => { setStep(next); setAnimating(false) }, 200)
   }
 
-  // After successful auth — fetch a callback token then redirect
   async function onAuthenticated() {
     if (!returnTo) { window.location.href = '/'; return }
     try {
@@ -70,7 +69,6 @@ function LoginContent() {
     }
   }
 
-  // ── Password login ──────────────────────────────────────────────────────────
   async function submitPassword() {
     if (!password || loading) return
     setPasswordError(null); setLoading(true)
@@ -89,7 +87,6 @@ function LoginContent() {
     finally { setLoading(false) }
   }
 
-  // ── OTP ─────────────────────────────────────────────────────────────────────
   async function submitOtp(code: string) {
     if (code.length < OTP_LENGTH || loading) return
     setOtpError(null); setLoading(true)
@@ -109,7 +106,6 @@ function LoginContent() {
     finally { setLoading(false) }
   }
 
-  // ── Email submit ─────────────────────────────────────────────────────────────
   async function handleEmailSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!EMAIL_RE.test(email)) { setEmailError('Needs to be a valid email'); triggerShake('email'); return }
@@ -186,30 +182,35 @@ function LoginContent() {
     else if (e.key === 'ArrowRight' && index < OTP_LENGTH - 1) digitRefs.current[index + 1]?.focus()
   }
 
-  const title = step === 'profile' ? 'Complete your profile' : 'Welcome'
-  const subtitle = step === 'profile' ? 'Tell us a bit about yourself' : 'Enter your email to sign in or create an account'
-  const showHeader = step === 'email' || step === 'profile'
-
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center px-4">
-      <div className="w-full max-w-sm">
+    <div className="flex-1 flex items-start justify-center px-4 py-10 sm:py-16">
+      <div className="w-full max-w-md">
 
-        {/* Logo */}
-        <div className="flex justify-center mb-8">
-          <div className="text-2xl font-bold tracking-tight text-purple-700 dark:text-purple-400">HEHA!</div>
+        {/* Step heading outside card */}
+        <div className="mb-5 text-center">
+          {step === 'email' && (
+            <>
+              <h1 className="text-2xl font-bold text-[#232323]">Sign in or create an account</h1>
+              <p className="mt-1 text-sm text-[#656F7E]">Enter your email to get started</p>
+            </>
+          )}
+          {step === 'otp' && (
+            <h1 className="text-2xl font-bold text-[#232323]">Enter your one-time passcode</h1>
+          )}
+          {step === 'passwordFallback' && (
+            <h1 className="text-2xl font-bold text-[#232323]">Enter your password</h1>
+          )}
+          {step === 'profile' && (
+            <>
+              <h1 className="text-2xl font-bold text-[#232323]">Complete your profile</h1>
+              <p className="mt-1 text-sm text-[#656F7E]">Tell us a bit about yourself</p>
+            </>
+          )}
         </div>
 
         {/* Card */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-8">
-
-          {showHeader && (
-            <div className="text-center mb-7">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{title}</h1>
-              <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400">{subtitle}</p>
-            </div>
-          )}
-
-          <div style={{ transition: 'opacity 0.2s, transform 0.2s', opacity: animating ? 0 : 1, transform: animating ? 'translateX(16px)' : 'none' }}>
+        <div className="bg-white rounded-[6px] shadow-sm border border-[#E0E0E0] p-6 sm:p-8">
+          <div style={{ transition: 'opacity 0.2s, transform 0.2s', opacity: animating ? 0 : 1, transform: animating ? 'translateX(12px)' : 'none' }}>
             {step === 'email' && (
               <EmailStep email={email} setEmail={v => { setEmail(v); if (emailError) setEmailError(null) }}
                 emailError={emailError} generalError={generalError} loading={loading}
@@ -229,7 +230,7 @@ function LoginContent() {
               <PasswordFallbackStep password={password}
                 setPassword={v => { setPassword(v); if (passwordError) setPasswordError(null) }}
                 loading={loading} passwordError={passwordError} shake={shake === 'passwordFallback'}
-                onSubmit={submitPassword} onBack={goBackToEmail} />
+                email={email} onSubmit={submitPassword} onBack={goBackToEmail} />
             )}
             {step === 'profile' && (
               <ProfileStep loading={loading} onSubmit={handleProfileSubmit}
@@ -237,6 +238,11 @@ function LoginContent() {
             )}
           </div>
         </div>
+
+        {/* Trust badges */}
+        <p className="mt-5 text-center text-xs text-[#999]">
+          Trusted by over 20 million customers · Secure login
+        </p>
       </div>
     </div>
   )
@@ -244,14 +250,32 @@ function LoginContent() {
 
 // ─── Shared ───────────────────────────────────────────────────────────────────
 
-const inputCls = "w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+const inputCls = [
+  'block w-full px-3 py-[6px] text-base text-[#232323] bg-white',
+  'border border-[#CCC] rounded-[6px]',
+  'shadow-[inset_0_1px_1px_rgba(0,0,0,0.075)]',
+  'placeholder-[#999] outline-none',
+  'transition-[border-color,box-shadow] duration-150 ease-in-out',
+  'focus:border-[#542E91] focus:shadow-[inset_0_1px_1px_rgba(0,0,0,0.075),0_0_0_3px_rgba(84,46,145,0.2)]',
+  'h-[42px]',
+].join(' ')
+
+const inputErrorCls = 'border-[#FF5962] focus:border-[#FF5962] focus:shadow-[inset_0_1px_1px_rgba(0,0,0,0.075),0_0_0_3px_rgba(255,89,98,0.2)]'
 
 function PrimaryBtn({ label, loading, disabled }: { label: string; loading: boolean; disabled?: boolean }) {
   return (
     <button type="submit" disabled={disabled ?? loading}
-      className="w-full rounded-xl bg-purple-700 hover:bg-purple-800 disabled:opacity-40 text-white text-sm font-semibold py-3 transition">
+      className="inline-block w-full rounded-[6px] bg-[#542E91] hover:bg-[#3E226A] active:bg-[#2E194F] disabled:opacity-60 text-white text-base font-semibold px-3 py-[6px] h-[42px] transition-colors duration-150 cursor-pointer disabled:cursor-not-allowed">
       {loading ? '…' : label}
     </button>
+  )
+}
+
+function ErrorMessage({ msg }: { msg: string }) {
+  return (
+    <div className="flex items-start gap-2 bg-[#FFEFF0] border-l-[3px] border-[#FF5962] rounded-[6px] px-3 py-2 text-sm text-[#FF5962] font-semibold">
+      {msg}
+    </div>
   )
 }
 
@@ -264,13 +288,23 @@ function PasswordInput({ value, onChange, placeholder = 'Password', autoComplete
       <div className={`relative ${shake ? 'animate-shake' : ''}`}>
         <input type={show ? 'text' : 'password'} autoComplete={autoComplete} value={value}
           onChange={e => onChange(e.target.value)} placeholder={placeholder}
-          className={inputCls + ' pr-14' + (error ? ' border-red-400 focus:ring-red-400' : '')} />
+          className={`${inputCls} pr-14 ${error ? inputErrorCls : ''}`} />
         <button type="button" onClick={() => setShow(s => !s)}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition">
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#542E91] hover:text-[#3E226A] font-semibold transition">
           {show ? 'Hide' : 'Show'}
         </button>
       </div>
-      {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+      {error && <p className="mt-1 text-xs text-[#FF5962] font-semibold">{error}</p>}
+    </div>
+  )
+}
+
+function BackLink({ onClick }: { onClick: () => void }) {
+  return (
+    <div className="text-center mt-1">
+      <button onClick={onClick} className="text-sm text-[#0094FF] hover:text-[#0068B3] hover:underline transition">
+        Use a different email
+      </button>
     </div>
   )
 }
@@ -282,14 +316,17 @@ function EmailStep({ email, setEmail, emailError, generalError, loading, shake, 
   loading: boolean; shake: boolean; onSubmit: (e: React.FormEvent) => void
 }) {
   return (
-    <form onSubmit={onSubmit} className="space-y-3">
-      <div className={shake ? 'animate-shake' : ''}>
-        <input type="email" autoComplete="email" autoFocus value={email} onChange={e => setEmail(e.target.value)}
-          placeholder="Email address" required
-          className={inputCls + (emailError ? ' border-red-400 focus:ring-red-400' : '')} />
-        {emailError && <p className="mt-1 text-xs text-red-500">{emailError}</p>}
+    <form onSubmit={onSubmit} className="space-y-4">
+      <div>
+        <label className="block text-sm font-semibold text-[#232323] mb-1">Email address</label>
+        <div className={shake ? 'animate-shake' : ''}>
+          <input type="email" autoComplete="email" autoFocus value={email} onChange={e => setEmail(e.target.value)}
+            placeholder="e.g. jane@example.com" required
+            className={`${inputCls} ${emailError ? inputErrorCls : ''}`} />
+        </div>
+        {emailError && <p className="mt-1 text-xs text-[#FF5962] font-semibold">{emailError}</p>}
       </div>
-      {generalError && <p className="text-xs text-red-500">{generalError}</p>}
+      {generalError && <ErrorMessage msg={generalError} />}
       <PrimaryBtn label="Continue" loading={loading} disabled={loading || !email} />
     </form>
   )
@@ -307,61 +344,65 @@ function OtpStep({ email, smsSentTo, digits, digitRefs, password, setPassword, l
 }) {
   const otpComplete = digits.every(d => d !== '')
   return (
-    <div className="space-y-4">
-      <div className="text-center">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Enter One-time-passcode</h2>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          {smsSentTo ? <>Code sent to <strong className="text-gray-700 dark:text-gray-300">{email}</strong> and SMS ********{smsSentTo}.</>
-            : <>Code sent to <strong className="text-gray-700 dark:text-gray-300">{email}</strong> and your phone.</>}
-        </p>
-      </div>
+    <div className="space-y-5">
+      <p className="text-sm text-[#656F7E]">
+        {smsSentTo
+          ? <>Code sent to <strong className="text-[#232323]">{email}</strong> and SMS ********{smsSentTo}.</>
+          : <>Code sent to <strong className="text-[#232323]">{email}</strong> and your phone.</>}
+      </p>
 
-      <div className={`flex gap-2 ${otpShake ? 'animate-shake' : ''}`}>
-        {digits.map((d, i) => (
-          <input key={i} ref={el => { digitRefs.current[i] = el }} type="text" inputMode="numeric"
-            autoComplete={i === 0 ? 'one-time-code' : 'off'} maxLength={OTP_LENGTH} value={d}
-            onChange={e => onDigitChange(i, e.target.value)} onKeyDown={e => onDigitKeyDown(i, e)}
-            onFocus={e => e.target.select()}
-            className={`flex-1 min-w-0 h-12 rounded-xl border text-center text-xl font-bold outline-none transition bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white
-              ${otpError ? 'border-red-400 focus:ring-red-400' : 'border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-purple-500 focus:border-transparent'}`} />
-        ))}
+      <div>
+        <div className={`flex gap-2 ${otpShake ? 'animate-shake' : ''}`}>
+          {digits.map((d, i) => (
+            <input key={i} ref={el => { digitRefs.current[i] = el }} type="text" inputMode="numeric"
+              autoComplete={i === 0 ? 'one-time-code' : 'off'} maxLength={OTP_LENGTH} value={d}
+              onChange={e => onDigitChange(i, e.target.value)} onKeyDown={e => onDigitKeyDown(i, e)}
+              onFocus={e => e.target.select()}
+              className={[
+                'flex-1 min-w-0 h-[52px] rounded-[6px] border text-center text-2xl font-bold outline-none transition-[border-color,box-shadow] duration-150',
+                'bg-white text-[#232323] shadow-[inset_0_1px_1px_rgba(0,0,0,0.075)]',
+                otpError
+                  ? 'border-[#FF5962] focus:border-[#FF5962] focus:shadow-[inset_0_1px_1px_rgba(0,0,0,0.075),0_0_0_3px_rgba(255,89,98,0.2)]'
+                  : 'border-[#CCC] focus:border-[#542E91] focus:shadow-[inset_0_1px_1px_rgba(0,0,0,0.075),0_0_0_3px_rgba(84,46,145,0.2)]',
+              ].join(' ')} />
+          ))}
+        </div>
+        {otpError && <p className="mt-1.5 text-xs text-[#FF5962] font-semibold">{otpError}</p>}
       </div>
-
-      {otpError && <p className="text-xs text-red-500">{otpError}</p>}
 
       <button type="button" onClick={onOtpSubmit} disabled={!otpComplete || loading}
-        className="w-full rounded-xl bg-purple-700 hover:bg-purple-800 disabled:opacity-40 text-white text-sm font-semibold py-3 transition">
-        {loading ? '…' : 'Verify'}
+        className="inline-block w-full rounded-[6px] bg-[#542E91] hover:bg-[#3E226A] disabled:opacity-60 text-white text-base font-semibold h-[42px] transition-colors duration-150 cursor-pointer disabled:cursor-not-allowed">
+        {loading ? '…' : 'Verify code'}
       </button>
 
       <div className="text-center text-sm">
         {resendCountdown > 0
-          ? <span className="text-gray-400">Resend in {resendCountdown}s</span>
-          : <button onClick={onResend} disabled={loading} className="text-purple-600 hover:underline disabled:opacity-40">Resend code</button>}
+          ? <span className="text-[#999]">Resend in {resendCountdown}s</span>
+          : <button onClick={onResend} disabled={loading} className="text-[#0094FF] hover:text-[#0068B3] hover:underline disabled:opacity-40 transition">Resend code</button>}
       </div>
 
       <div className="flex items-center gap-3">
-        <div className="flex-1 h-px bg-gray-100 dark:bg-gray-800" />
-        <span className="text-xs text-gray-400">OR</span>
-        <div className="flex-1 h-px bg-gray-100 dark:bg-gray-800" />
+        <div className="flex-1 h-px bg-[#E0E0E0]" />
+        <span className="text-xs text-[#999] font-semibold">OR</span>
+        <div className="flex-1 h-px bg-[#E0E0E0]" />
       </div>
 
-      <PasswordInput value={password} onChange={setPassword} shake={passwordShake} error={passwordError} />
-      <button type="button" onClick={onPasswordSubmit} disabled={!password || loading}
-        className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-sm font-semibold py-3 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 transition">
-        Sign in with password
-      </button>
-
-      <div className="text-center">
-        <button onClick={onBack} className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition">Use a different email</button>
+      <div className="space-y-3">
+        <label className="block text-sm font-semibold text-[#232323]">Sign in with password instead</label>
+        <PasswordInput value={password} onChange={setPassword} shake={passwordShake} error={passwordError} />
+        <button type="button" onClick={onPasswordSubmit} disabled={!password || loading}
+          className="inline-block w-full rounded-[6px] border border-[#542E91] bg-white hover:bg-[#F5F0FF] text-[#542E91] text-base font-semibold h-[42px] transition-colors duration-150 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+          Sign in with password
+        </button>
       </div>
 
-      <p className="text-center text-[11px] text-gray-400">
-        HEHA is protected by reCAPTCHA and the Google{' '}
-        <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="underline">Privacy Policy</a>
-        {' '}and{' '}
-        <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" className="underline">Terms of Service</a>
-        {' '}apply.
+      <BackLink onClick={onBack} />
+
+      <p className="text-center text-[11px] text-[#999]">
+        Protected by reCAPTCHA —{' '}
+        <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="underline">Privacy</a>
+        {' '}·{' '}
+        <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" className="underline">Terms</a>
       </p>
     </div>
   )
@@ -369,20 +410,20 @@ function OtpStep({ email, smsSentTo, digits, digitRefs, password, setPassword, l
 
 // ─── Password fallback ────────────────────────────────────────────────────────
 
-function PasswordFallbackStep({ password, setPassword, loading, passwordError, shake, onSubmit, onBack }: {
-  password: string; setPassword: (v: string) => void; loading: boolean; passwordError: string | null; shake: boolean; onSubmit: () => void; onBack: () => void
+function PasswordFallbackStep({ password, setPassword, loading, passwordError, shake, email, onSubmit, onBack }: {
+  password: string; setPassword: (v: string) => void; loading: boolean; passwordError: string | null; shake: boolean; email: string; onSubmit: () => void; onBack: () => void
 }) {
   return (
     <div className="space-y-4">
-      <p className="text-center text-sm text-gray-500 dark:text-gray-400">We couldn&apos;t send a passcode right now, enter your password.</p>
+      <p className="text-sm text-[#656F7E]">
+        We couldn&apos;t send a passcode to <strong className="text-[#232323]">{email}</strong>. Enter your password to continue.
+      </p>
       <PasswordInput value={password} onChange={setPassword} shake={shake} error={passwordError} />
       <button type="button" onClick={onSubmit} disabled={!password || loading}
-        className="w-full rounded-xl bg-purple-700 hover:bg-purple-800 disabled:opacity-40 text-white text-sm font-semibold py-3 transition">
+        className="inline-block w-full rounded-[6px] bg-[#542E91] hover:bg-[#3E226A] disabled:opacity-60 text-white text-base font-semibold h-[42px] transition-colors duration-150 cursor-pointer disabled:cursor-not-allowed">
         {loading ? '…' : 'Sign in'}
       </button>
-      <div className="text-center">
-        <button onClick={onBack} className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition">Use a different email</button>
-      </div>
+      <BackLink onClick={onBack} />
     </div>
   )
 }
@@ -396,15 +437,26 @@ function ProfileStep({ loading, onSubmit, onSkip }: {
   const [familyName, setFamilyName] = useState('')
   const [contactNumber, setContactNumber] = useState('')
   return (
-    <form onSubmit={e => { e.preventDefault(); onSubmit(givenName, familyName, contactNumber) }} className="space-y-3">
-      <div className="flex gap-2">
-        <input type="text" autoComplete="given-name" autoFocus value={givenName} onChange={e => setGivenName(e.target.value)} placeholder="First name" className={inputCls} style={{ flex: 1 }} />
-        <input type="text" autoComplete="family-name" value={familyName} onChange={e => setFamilyName(e.target.value)} placeholder="Last name" className={inputCls} style={{ flex: 1 }} />
+    <form onSubmit={e => { e.preventDefault(); onSubmit(givenName, familyName, contactNumber) }} className="space-y-4">
+      <div className="flex gap-3">
+        <div className="flex-1">
+          <label className="block text-sm font-semibold text-[#232323] mb-1">First name</label>
+          <input type="text" autoComplete="given-name" autoFocus value={givenName} onChange={e => setGivenName(e.target.value)} placeholder="Jane" className={inputCls} />
+        </div>
+        <div className="flex-1">
+          <label className="block text-sm font-semibold text-[#232323] mb-1">Last name</label>
+          <input type="text" autoComplete="family-name" value={familyName} onChange={e => setFamilyName(e.target.value)} placeholder="Smith" className={inputCls} />
+        </div>
       </div>
-      <input type="tel" autoComplete="tel" value={contactNumber} onChange={e => setContactNumber(e.target.value)} placeholder="Phone number" className={inputCls} />
+      <div>
+        <label className="block text-sm font-semibold text-[#232323] mb-1">Phone number</label>
+        <input type="tel" autoComplete="tel" value={contactNumber} onChange={e => setContactNumber(e.target.value)} placeholder="+44 7700 900000" className={inputCls} />
+      </div>
       <PrimaryBtn label="Continue" loading={loading} disabled={loading || !contactNumber} />
       <div className="text-center">
-        <button type="button" onClick={onSkip} disabled={loading} className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 disabled:opacity-40 transition">Skip for now</button>
+        <button type="button" onClick={onSkip} disabled={loading} className="text-sm text-[#0094FF] hover:text-[#0068B3] hover:underline disabled:opacity-40 transition">
+          Skip for now
+        </button>
       </div>
     </form>
   )
