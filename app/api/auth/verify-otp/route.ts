@@ -15,9 +15,6 @@ export async function POST(req: Request) {
     const res = NextResponse.json({ success: true })
     res.cookies.set(SESSION_COOKIE, token, SESSION_COOKIE_OPTS)
     forwardHxCookies(res, data.hxCookies)
-    // Temporary debug header — remove after confirming
-    res.headers.set('X-Debug-HX-Cookies', JSON.stringify(data.hxCookies.map(c => c.split(';')[0].split('=')[0].trim())))
-    res.headers.set('X-Debug-HX-Count', String(data.hxCookies.length))
     return res
   } catch (e) {
     return NextResponse.json({ error: e instanceof Error ? e.message : 'Failed' }, { status: 502 })
