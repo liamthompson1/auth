@@ -52,6 +52,29 @@ export function isAllowedReturnHost(url: string) {
   } catch { return false }
 }
 
+/**
+ * Forward HX auth cookies (auth_session, auth_token) from the HX API response
+ * onto our NextResponse so the browser gets them under holidayextras.com domain.
+ */
+export function forwardHxCookies(res: import('next/server').NextResponse, rawCookies: string[]) {
+  const HX_COOKIE_NAMES = ['auth_session', 'auth_token']
+  for (const cookieStr of rawCookies) {
+    const [nameValue] = cookieStr.split(';')
+    const eqIdx = nameValue.indexOf('=')
+    if (eqIdx === -1) continue
+    const name = nameValue.slice(0, eqIdx).trim()
+    const value = nameValue.slice(eqIdx + 1).trim()
+    if (!HX_COOKIE_NAMES.includes(name)) continue
+    res.cookies.set(name, value, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 30, // 30 days — match HX default
+    })
+  }
+}
+
 export const SESSION_COOKIE = 'hxauth_session'
 export const SESSION_COOKIE_OPTS = {
   httpOnly: true,

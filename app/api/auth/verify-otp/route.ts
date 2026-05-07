@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { verifyOtp } from '@/lib/hx-client'
-import { createSession, hashEmail, SESSION_COOKIE, SESSION_COOKIE_OPTS } from '@/lib/auth'
+import { createSession, forwardHxCookies, hashEmail, SESSION_COOKIE, SESSION_COOKIE_OPTS } from '@/lib/auth'
 
 export async function POST(req: Request) {
   const { email, otp } = await req.json().catch(() => ({}))
@@ -14,6 +14,7 @@ export async function POST(req: Request) {
     const token = await createSession({ email: email.toLowerCase().trim(), userId, userHash: userId })
     const res = NextResponse.json({ success: true })
     res.cookies.set(SESSION_COOKIE, token, SESSION_COOKIE_OPTS)
+    forwardHxCookies(res, data.hxCookies)
     return res
   } catch (e) {
     return NextResponse.json({ error: e instanceof Error ? e.message : 'Failed' }, { status: 502 })

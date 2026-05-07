@@ -38,7 +38,8 @@ export async function signInWithPassword(email: string, password: string) {
   const json = await res.json()
   if (json.errors?.length) throw new Error(json.errors[0].message)
   if (!json.data?.signInCustomerWithEmailAndPassword?.success) throw new Error('Invalid credentials')
-  return { firebaseToken: json.data.signInCustomerWithEmailAndPassword.firebaseToken ?? null }
+  const hxCookies = res.headers.getSetCookie?.() ?? []
+  return { firebaseToken: json.data.signInCustomerWithEmailAndPassword.firebaseToken ?? null, hxCookies }
 }
 
 export async function requestOtp(email: string) {
@@ -74,7 +75,8 @@ export async function verifyOtp(email: string, otp: string) {
   })
   const json = await res.json()
   if (json.errors?.length) throw new Error(json.errors[0].message)
-  return json.data.signInCustomerWithOTP as { success: boolean; firebaseToken: string | null }
+  const hxCookies = res.headers.getSetCookie?.() ?? []
+  return { ...(json.data.signInCustomerWithOTP as { success: boolean; firebaseToken: string | null }), hxCookies }
 }
 
 export async function completeProfile(hxToken: string, profile: { givenName?: string; familyName?: string; contactNumber?: string }) {
