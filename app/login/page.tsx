@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { basePath } from '@/lib/basePath'
 
 export default function LoginPage() {
   return (
@@ -60,7 +61,7 @@ function LoginContent() {
   async function onAuthenticated() {
     if (!returnTo) { window.location.href = '/'; return }
     try {
-      const res = await fetch('/api/auth/callback-token', { method: 'POST' })
+      const res = await fetch(`${basePath}/api/auth/callback-token`, { method: 'POST' })
       const data = await res.json()
       const sep = returnTo.includes('?') ? '&' : '?'
       window.location.href = `${returnTo}${sep}heha_token=${data.token}`
@@ -74,7 +75,7 @@ function LoginContent() {
     if (!password || loading) return
     setPasswordError(null); setLoading(true)
     try {
-      const res = await fetch('/api/auth/login-password', {
+      const res = await fetch(`${basePath}/api/auth/login-password`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       })
@@ -93,7 +94,7 @@ function LoginContent() {
     if (code.length < OTP_LENGTH || loading) return
     setOtpError(null); setLoading(true)
     try {
-      const res = await fetch('/api/auth/verify-otp', {
+      const res = await fetch(`${basePath}/api/auth/verify-otp`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, otp: code }),
       })
@@ -114,7 +115,7 @@ function LoginContent() {
     if (!EMAIL_RE.test(email)) { setEmailError('Needs to be a valid email'); triggerShake('email'); return }
     setEmailError(null); setGeneralError(null); setLoading(true)
     try {
-      const res = await fetch('/api/auth/request-otp', {
+      const res = await fetch(`${basePath}/api/auth/request-otp`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       })
@@ -135,7 +136,7 @@ function LoginContent() {
     if (resendCountdown > 0 || loading) return
     setDigits(Array(OTP_LENGTH).fill('')); setOtpError(null); setLoading(true)
     try {
-      const res = await fetch('/api/auth/request-otp', {
+      const res = await fetch(`${basePath}/api/auth/request-otp`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       })
@@ -149,7 +150,7 @@ function LoginContent() {
     if (givenName || familyName || contactNumber) {
       setLoading(true)
       try {
-        await fetch('/api/auth/complete-profile', {
+        await fetch(`${basePath}/api/auth/complete-profile`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ givenName, familyName, contactNumber }),
         })
