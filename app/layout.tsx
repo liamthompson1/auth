@@ -16,12 +16,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         {/* Purple navbar */}
         <header className="bg-[#542E91] shrink-0">
-          <div className="max-w-5xl mx-auto px-6 h-16 sm:h-20 flex items-center">
+          <div className="flex justify-center items-center h-24 sm:h-28">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="https://d17s4kc6349e5h.cloudfront.net/holidayextras/assets/images/logos/HolidayExtras-logo-horizontal-transparent.svg"
               alt="Holiday Extras"
-              className="h-9 sm:h-11 w-auto"
+              className="h-14 sm:h-16 w-auto"
             />
           </div>
         </header>
