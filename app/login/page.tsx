@@ -6,7 +6,7 @@ import { basePath } from '@/lib/basePath'
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="flex-1 bg-white" />}>
+    <Suspense fallback={<div className="flex-1" />}>
       <LoginContent />
     </Suspense>
   )
@@ -183,50 +183,35 @@ function LoginContent() {
   }
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-start px-5 pt-10 pb-16">
-
-      {/* Logo */}
-      <div className="mb-10">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="https://d17s4kc6349e5h.cloudfront.net/holidayextras/assets/images/logos/HolidayExtras-logo-stacked-transparent.svg"
-          alt="Holiday Extras"
-          className="h-24 w-auto"
-          style={{ filter: 'invert(20%) sepia(80%) saturate(600%) hue-rotate(240deg) brightness(60%)' }}
-        />
-      </div>
-
-      {/* Content */}
-      <div className="w-full max-w-md">
-        <div
-          style={{ transition: 'opacity 0.18s ease, transform 0.18s ease', opacity: animating ? 0 : 1, transform: animating ? 'translateX(10px)' : 'none' }}
-        >
-          {step === 'email' && (
-            <EmailStep email={email} setEmail={v => { setEmail(v); if (emailError) setEmailError(null) }}
-              emailError={emailError} generalError={generalError} loading={loading}
-              shake={shake === 'email'} onSubmit={handleEmailSubmit} />
-          )}
-          {step === 'otp' && (
-            <OtpStep email={email} smsSentTo={smsSentTo} digits={digits} digitRefs={digitRefs}
-              password={password} setPassword={v => { setPassword(v); if (passwordError) setPasswordError(null) }}
-              loading={loading} otpError={otpError} passwordError={passwordError}
-              otpShake={shake === 'otp'} passwordShake={shake === 'passwordFallback'}
-              resendCountdown={resendCountdown} onDigitChange={handleDigitChange}
-              onDigitKeyDown={handleDigitKeyDown} onResend={handleResend}
-              onOtpSubmit={() => submitOtp(digits.join(''))}
-              onPasswordSubmit={submitPassword} onBack={goBackToEmail} />
-          )}
-          {step === 'passwordFallback' && (
-            <PasswordFallbackStep password={password}
-              setPassword={v => { setPassword(v); if (passwordError) setPasswordError(null) }}
-              loading={loading} passwordError={passwordError} shake={shake === 'passwordFallback'}
-              email={email} onSubmit={submitPassword} onBack={goBackToEmail} />
-          )}
-          {step === 'profile' && (
-            <ProfileStep loading={loading} onSubmit={handleProfileSubmit}
-              onSkip={() => onAuthenticated()} />
-          )}
-        </div>
+    <div className="flex-1 flex items-start justify-center px-4 py-10 sm:py-14">
+      <div
+        className="w-full max-w-[480px] bg-white rounded-2xl shadow-sm p-8 sm:p-10"
+        style={{ transition: 'opacity 0.18s ease, transform 0.18s ease', opacity: animating ? 0 : 1, transform: animating ? 'translateX(8px)' : 'none' }}
+      >
+        {step === 'email' && (
+          <EmailStep email={email} setEmail={v => { setEmail(v); if (emailError) setEmailError(null) }}
+            emailError={emailError} generalError={generalError} loading={loading}
+            shake={shake === 'email'} onSubmit={handleEmailSubmit} />
+        )}
+        {step === 'otp' && (
+          <OtpStep email={email} smsSentTo={smsSentTo} digits={digits} digitRefs={digitRefs}
+            password={password} setPassword={v => { setPassword(v); if (passwordError) setPasswordError(null) }}
+            loading={loading} otpError={otpError} passwordError={passwordError}
+            otpShake={shake === 'otp'} passwordShake={shake === 'passwordFallback'}
+            resendCountdown={resendCountdown} onDigitChange={handleDigitChange}
+            onDigitKeyDown={handleDigitKeyDown} onResend={handleResend}
+            onOtpSubmit={() => submitOtp(digits.join(''))}
+            onPasswordSubmit={submitPassword} onBack={goBackToEmail} />
+        )}
+        {step === 'passwordFallback' && (
+          <PasswordFallbackStep password={password}
+            setPassword={v => { setPassword(v); if (passwordError) setPasswordError(null) }}
+            loading={loading} passwordError={passwordError} shake={shake === 'passwordFallback'}
+            email={email} onSubmit={submitPassword} onBack={goBackToEmail} />
+        )}
+        {step === 'profile' && (
+          <ProfileStep loading={loading} onSubmit={handleProfileSubmit} onSkip={() => onAuthenticated()} />
+        )}
       </div>
     </div>
   )
@@ -235,40 +220,53 @@ function LoginContent() {
 // ─── Shared ───────────────────────────────────────────────────────────────────
 
 const inputCls = [
-  'block w-full px-5 text-base text-[#232323] bg-white',
-  'border border-[#D0D0D0] rounded-2xl',
-  'placeholder-[#542E91] outline-none h-[58px]',
+  'block w-full px-4 text-base text-[#232323] bg-white h-[54px]',
+  'border border-[#CFCFCF] rounded-xl outline-none',
+  'placeholder-[#999]',
   'transition-[border-color,box-shadow] duration-150',
-  'focus:border-[#542E91] focus:shadow-[0_0_0_3px_rgba(84,46,145,0.15)]',
+  'focus:border-[#542E91] focus:shadow-[0_0_0_3px_rgba(84,46,145,0.12)]',
 ].join(' ')
 
-const inputErrorCls = 'border-[#FF5962] focus:border-[#FF5962] focus:shadow-[0_0_0_3px_rgba(255,89,98,0.15)]'
+const inputErrorCls = 'border-[#FF5962] focus:border-[#FF5962] focus:shadow-[0_0_0_3px_rgba(255,89,98,0.12)]'
+
+function StepHeading({ title, sub }: { title: string; sub?: string }) {
+  return (
+    <div className="mb-6">
+      <h1 className="text-3xl font-extrabold text-[#542E91]">{title}</h1>
+      {sub && <p className="mt-1.5 text-[#656F7E]">{sub}</p>}
+    </div>
+  )
+}
 
 function PrimaryBtn({ label, loading, disabled, onClick }: { label: string; loading: boolean; disabled?: boolean; onClick?: () => void }) {
   return (
-    <button
-      type={onClick ? 'button' : 'submit'}
-      onClick={onClick}
-      disabled={disabled ?? loading}
-      className="w-full rounded-2xl bg-[#542E91] hover:bg-[#3E226A] active:bg-[#2E194F] disabled:opacity-50 text-white text-lg font-bold h-[58px] transition-colors duration-150 cursor-pointer disabled:cursor-not-allowed"
-    >
+    <button type={onClick ? 'button' : 'submit'} onClick={onClick} disabled={disabled ?? loading}
+      className="w-full rounded-xl bg-[#542E91] hover:bg-[#3E226A] active:bg-[#2E194F] disabled:opacity-50 text-white text-base font-bold h-[54px] transition-colors duration-150 cursor-pointer disabled:cursor-not-allowed">
       {loading ? '…' : label}
     </button>
   )
 }
 
-function BackLink({ onClick }: { onClick: () => void }) {
+function OutlineBtn({ label, loading, disabled, onClick }: { label: string; loading: boolean; disabled?: boolean; onClick?: () => void }) {
   return (
-    <div className="text-center">
-      <button onClick={onClick} className="text-sm text-[#542E91] hover:underline transition">
-        Use a different email
-      </button>
-    </div>
+    <button type="button" onClick={onClick} disabled={disabled ?? loading}
+      className="w-full rounded-xl border-2 border-[#542E91] text-[#542E91] text-base font-bold h-[54px] hover:bg-[#F5F0FF] disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-150">
+      {loading ? '…' : label}
+    </button>
   )
 }
 
 function ErrorMsg({ msg }: { msg: string }) {
-  return <p className="text-sm text-[#FF5962] font-semibold mt-1">{msg}</p>
+  return <p className="mt-1.5 text-sm text-[#FF5962] font-semibold">{msg}</p>
+}
+
+function DiffEmail({ onClick }: { onClick: () => void }) {
+  return (
+    <p className="text-center text-sm text-[#999]">
+      Wrong email?{' '}
+      <button onClick={onClick} className="text-[#542E91] font-semibold hover:underline">Change it</button>
+    </p>
+  )
 }
 
 function PasswordInput({ value, onChange, placeholder = 'Password', shake = false, error }: {
@@ -282,7 +280,7 @@ function PasswordInput({ value, onChange, placeholder = 'Password', shake = fals
           onChange={e => onChange(e.target.value)} placeholder={placeholder}
           className={`${inputCls} pr-16 ${error ? inputErrorCls : ''}`} />
         <button type="button" onClick={() => setShow(s => !s)}
-          className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-[#542E91] font-semibold hover:underline">
+          className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-[#542E91] font-bold hover:underline">
           {show ? 'Hide' : 'Show'}
         </button>
       </div>
@@ -299,14 +297,10 @@ function EmailStep({ email, setEmail, emailError, generalError, loading, shake, 
 }) {
   return (
     <form onSubmit={onSubmit} className="space-y-4">
-      <div className="mb-7">
-        <h1 className="text-4xl font-extrabold text-[#542E91] leading-tight">Sign in or Join</h1>
-        <p className="mt-2 text-base text-[#656F7E]">Let&apos;s get started with your email address</p>
-      </div>
+      <StepHeading title="Sign in or Join" sub="Let's get started with your email address" />
       <div className={shake ? 'animate-shake' : ''}>
         <input type="email" autoComplete="email" autoFocus value={email} onChange={e => setEmail(e.target.value)}
-          placeholder="Email" required
-          className={`${inputCls} ${emailError ? inputErrorCls : ''}`} />
+          placeholder="Email" required className={`${inputCls} ${emailError ? inputErrorCls : ''}`} />
         {emailError && <ErrorMsg msg={emailError} />}
       </div>
       {generalError && <ErrorMsg msg={generalError} />}
@@ -319,61 +313,58 @@ function EmailStep({ email, setEmail, emailError, generalError, loading, shake, 
 
 function OtpStep({ email, smsSentTo, digits, digitRefs, password, setPassword, loading, otpError, passwordError,
   otpShake, passwordShake, resendCountdown, onDigitChange, onDigitKeyDown, onResend, onOtpSubmit, onPasswordSubmit, onBack }: {
-  email: string; smsSentTo: string | null; digits: string[]; digitRefs: React.MutableRefObject<(HTMLInputElement | null)[]>
-  password: string; setPassword: (v: string) => void; loading: boolean; otpError: string | null; passwordError: string | null
+  email: string; smsSentTo: string | null; digits: string[]
+  digitRefs: React.MutableRefObject<(HTMLInputElement | null)[]>
+  password: string; setPassword: (v: string) => void; loading: boolean
+  otpError: string | null; passwordError: string | null
   otpShake: boolean; passwordShake: boolean; resendCountdown: number
-  onDigitChange: (i: number, v: string) => void; onDigitKeyDown: (i: number, e: React.KeyboardEvent<HTMLInputElement>) => void
+  onDigitChange: (i: number, v: string) => void
+  onDigitKeyDown: (i: number, e: React.KeyboardEvent<HTMLInputElement>) => void
   onResend: () => void; onOtpSubmit: () => void; onPasswordSubmit: () => void; onBack: () => void
 }) {
   const otpComplete = digits.every(d => d !== '')
   return (
-    <div className="space-y-5">
-      <div className="mb-7">
-        <h1 className="text-4xl font-extrabold text-[#542E91] leading-tight">Enter your code</h1>
-        <p className="mt-2 text-base text-[#656F7E]">
-          {smsSentTo
-            ? <>Sent to <strong className="text-[#232323]">{email}</strong> and SMS ********{smsSentTo}</>
-            : <>Sent to <strong className="text-[#232323]">{email}</strong> and your phone</>}
-        </p>
-      </div>
+    <div className="space-y-4">
+      <StepHeading title="Check your inbox"
+        sub={smsSentTo
+          ? `Code sent to ${email} and SMS ********${smsSentTo}`
+          : `Code sent to ${email} and your phone`} />
 
-      <div className={`flex gap-2 ${otpShake ? 'animate-shake' : ''}`}>
-        {digits.map((d, i) => (
-          <input key={i} ref={el => { digitRefs.current[i] = el }} type="text" inputMode="numeric"
-            autoComplete={i === 0 ? 'one-time-code' : 'off'} maxLength={OTP_LENGTH} value={d}
-            onChange={e => onDigitChange(i, e.target.value)} onKeyDown={e => onDigitKeyDown(i, e)}
-            onFocus={e => e.target.select()}
-            className={[
-              'flex-1 min-w-0 h-[58px] rounded-2xl border text-center text-2xl font-bold outline-none transition-[border-color,box-shadow] duration-150 bg-white text-[#232323]',
-              otpError
-                ? 'border-[#FF5962] focus:border-[#FF5962] focus:shadow-[0_0_0_3px_rgba(255,89,98,0.15)]'
-                : 'border-[#D0D0D0] focus:border-[#542E91] focus:shadow-[0_0_0_3px_rgba(84,46,145,0.15)]',
-            ].join(' ')} />
-        ))}
+      <div>
+        <div className={`flex gap-2 ${otpShake ? 'animate-shake' : ''}`}>
+          {digits.map((d, i) => (
+            <input key={i} ref={el => { digitRefs.current[i] = el }} type="text" inputMode="numeric"
+              autoComplete={i === 0 ? 'one-time-code' : 'off'} maxLength={OTP_LENGTH} value={d}
+              onChange={e => onDigitChange(i, e.target.value)} onKeyDown={e => onDigitKeyDown(i, e)}
+              onFocus={e => e.target.select()}
+              className={[
+                'flex-1 min-w-0 h-[54px] rounded-xl border text-center text-2xl font-bold outline-none bg-white text-[#232323] transition-[border-color,box-shadow] duration-150',
+                otpError
+                  ? 'border-[#FF5962] focus:border-[#FF5962] focus:shadow-[0_0_0_3px_rgba(255,89,98,0.12)]'
+                  : 'border-[#CFCFCF] focus:border-[#542E91] focus:shadow-[0_0_0_3px_rgba(84,46,145,0.12)]',
+              ].join(' ')} />
+          ))}
+        </div>
+        {otpError && <ErrorMsg msg={otpError} />}
       </div>
-      {otpError && <ErrorMsg msg={otpError} />}
 
       <PrimaryBtn label="Verify" loading={loading} disabled={!otpComplete || loading} onClick={onOtpSubmit} />
 
-      <div className="text-center text-sm">
+      <p className="text-center text-sm text-[#999]">
         {resendCountdown > 0
-          ? <span className="text-[#999]">Resend in {resendCountdown}s</span>
-          : <button onClick={onResend} disabled={loading} className="text-[#542E91] hover:underline disabled:opacity-40">Resend code</button>}
-      </div>
+          ? <>Resend in {resendCountdown}s</>
+          : <button onClick={onResend} disabled={loading} className="text-[#542E91] font-semibold hover:underline disabled:opacity-40">Resend code</button>}
+      </p>
 
-      <div className="flex items-center gap-3 py-1">
+      <div className="flex items-center gap-3">
         <div className="flex-1 h-px bg-[#EBEBEB]" />
-        <span className="text-xs text-[#999] font-semibold tracking-wide uppercase">Or sign in with password</span>
+        <span className="text-xs font-semibold text-[#BBB] uppercase tracking-wide">or</span>
         <div className="flex-1 h-px bg-[#EBEBEB]" />
       </div>
 
       <PasswordInput value={password} onChange={setPassword} shake={passwordShake} error={passwordError} />
-      <button type="button" onClick={onPasswordSubmit} disabled={!password || loading}
-        className="w-full rounded-2xl border-2 border-[#542E91] text-[#542E91] text-lg font-bold h-[58px] hover:bg-[#F5F0FF] disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-150">
-        Sign in with password
-      </button>
-
-      <BackLink onClick={onBack} />
+      <OutlineBtn label="Sign in with password" loading={loading} disabled={!password || loading} onClick={onPasswordSubmit} />
+      <DiffEmail onClick={onBack} />
     </div>
   )
 }
@@ -381,20 +372,15 @@ function OtpStep({ email, smsSentTo, digits, digitRefs, password, setPassword, l
 // ─── Password fallback ────────────────────────────────────────────────────────
 
 function PasswordFallbackStep({ password, setPassword, loading, passwordError, shake, email, onSubmit, onBack }: {
-  password: string; setPassword: (v: string) => void; loading: boolean; passwordError: string | null
-  shake: boolean; email: string; onSubmit: () => void; onBack: () => void
+  password: string; setPassword: (v: string) => void; loading: boolean
+  passwordError: string | null; shake: boolean; email: string; onSubmit: () => void; onBack: () => void
 }) {
   return (
     <div className="space-y-4">
-      <div className="mb-7">
-        <h1 className="text-4xl font-extrabold text-[#542E91] leading-tight">Enter your password</h1>
-        <p className="mt-2 text-base text-[#656F7E]">
-          Signing in as <strong className="text-[#232323]">{email}</strong>
-        </p>
-      </div>
+      <StepHeading title="Enter your password" sub={`Signing in as ${email}`} />
       <PasswordInput value={password} onChange={setPassword} shake={shake} error={passwordError} />
       <PrimaryBtn label="Sign in" loading={loading} disabled={!password || loading} onClick={onSubmit} />
-      <BackLink onClick={onBack} />
+      <DiffEmail onClick={onBack} />
     </div>
   )
 }
@@ -409,25 +395,24 @@ function ProfileStep({ loading, onSubmit, onSkip }: {
   const [contactNumber, setContactNumber] = useState('')
   return (
     <form onSubmit={e => { e.preventDefault(); onSubmit(givenName, familyName, contactNumber) }} className="space-y-4">
-      <div className="mb-7">
-        <h1 className="text-4xl font-extrabold text-[#542E91] leading-tight">Complete your profile</h1>
-        <p className="mt-2 text-base text-[#656F7E]">Tell us a bit about yourself</p>
-      </div>
+      <StepHeading title="Complete your profile" sub="Tell us a bit about yourself" />
       <div className="flex gap-3">
-        <input type="text" autoComplete="given-name" autoFocus value={givenName} onChange={e => setGivenName(e.target.value)}
-          placeholder="First name" className={inputCls} style={{ flex: 1 }} />
-        <input type="text" autoComplete="family-name" value={familyName} onChange={e => setFamilyName(e.target.value)}
-          placeholder="Last name" className={inputCls} style={{ flex: 1 }} />
+        <input type="text" autoComplete="given-name" autoFocus value={givenName}
+          onChange={e => setGivenName(e.target.value)} placeholder="First name"
+          className={inputCls} style={{ flex: 1 }} />
+        <input type="text" autoComplete="family-name" value={familyName}
+          onChange={e => setFamilyName(e.target.value)} placeholder="Last name"
+          className={inputCls} style={{ flex: 1 }} />
       </div>
-      <input type="tel" autoComplete="tel" value={contactNumber} onChange={e => setContactNumber(e.target.value)}
-        placeholder="Phone number" className={inputCls} />
+      <input type="tel" autoComplete="tel" value={contactNumber}
+        onChange={e => setContactNumber(e.target.value)} placeholder="Phone number" className={inputCls} />
       <PrimaryBtn label="Continue" loading={loading} disabled={loading || !contactNumber} />
-      <div className="text-center">
+      <p className="text-center text-sm">
         <button type="button" onClick={onSkip} disabled={loading}
-          className="text-sm text-[#542E91] hover:underline disabled:opacity-40">
+          className="text-[#542E91] font-semibold hover:underline disabled:opacity-40">
           Skip for now
         </button>
-      </div>
+      </p>
     </form>
   )
 }
