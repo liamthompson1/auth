@@ -89,7 +89,7 @@ export function forwardHxCookies(res: import('next/server').NextResponse, rawCoo
   }
 }
 
-export const SESSION_COOKIE = 'hxauth_session'
+export const SESSION_COOKIE = 'jwt'
 export const SESSION_COOKIE_OPTS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
