@@ -263,7 +263,7 @@ function PrimaryBtn({ label, loading, disabled, onClick }: { label: string; load
 
 function OutlineBtn({ label, loading, disabled, onClick }: { label: string; loading: boolean; disabled?: boolean; onClick?: () => void }) {
   return (
-    <button type="button" onClick={onClick} disabled={disabled ?? loading}
+    <button type={onClick ? 'button' : 'submit'} onClick={onClick} disabled={disabled ?? loading}
       className="w-full flex items-center justify-center rounded-xl border-2 border-[#542E91] text-[#542E91] text-base font-bold h-[54px] hover:bg-[#F5F0FF] disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-150">
       {loading ? <Spinner /> : label}
     </button>
@@ -278,7 +278,7 @@ function DiffEmail({ onClick }: { onClick: () => void }) {
   return (
     <p className="text-center text-sm text-[#999]">
       Wrong email?{' '}
-      <button onClick={onClick} className="text-[#542E91] font-semibold hover:underline">Change it</button>
+      <button type="button" onClick={onClick} className="text-[#542E91] font-semibold hover:underline">Change it</button>
     </p>
   )
 }
@@ -376,8 +376,13 @@ function OtpStep({ email, smsSentTo, digits, digitRefs, password, setPassword, l
         <div className="flex-1 h-px bg-[#EBEBEB]" />
       </div>
 
-      <PasswordInput value={password} onChange={setPassword} shake={passwordShake} error={passwordError} />
-      <OutlineBtn label="Sign in with password" loading={loading} disabled={!password || loading} onClick={onPasswordSubmit} />
+      <form
+        className="space-y-4"
+        onSubmit={e => { e.preventDefault(); if (password && !loading) onPasswordSubmit() }}
+      >
+        <PasswordInput value={password} onChange={setPassword} shake={passwordShake} error={passwordError} />
+        <OutlineBtn label="Sign in with password" loading={loading} disabled={!password || loading} />
+      </form>
       <DiffEmail onClick={onBack} />
     </div>
   )
@@ -390,12 +395,15 @@ function PasswordFallbackStep({ password, setPassword, loading, passwordError, s
   passwordError: string | null; shake: boolean; email: string; onSubmit: () => void; onBack: () => void
 }) {
   return (
-    <div className="space-y-4">
+    <form
+      className="space-y-4"
+      onSubmit={e => { e.preventDefault(); if (password && !loading) onSubmit() }}
+    >
       <StepHeading title="Enter your password" sub={`Signing in as ${email}`} />
       <PasswordInput value={password} onChange={setPassword} shake={shake} error={passwordError} />
-      <PrimaryBtn label="Sign in" loading={loading} disabled={!password || loading} onClick={onSubmit} />
+      <PrimaryBtn label="Sign in" loading={loading} disabled={!password || loading} />
       <DiffEmail onClick={onBack} />
-    </div>
+    </form>
   )
 }
 
