@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createAccountAndSignIn, requestOtp } from '@/lib/hx-client'
-import { createSession, hashEmail, SESSION_COOKIE, SESSION_COOKIE_OPTS } from '@/lib/auth'
+import { createSession, forwardHxCookies, hashEmail, SESSION_COOKIE, SESSION_COOKIE_OPTS } from '@/lib/auth'
 import { randomBytes } from 'crypto'
 
 export async function POST(req: Request) {
@@ -13,11 +13,12 @@ export async function POST(req: Request) {
     // Try creating new account first
     try {
       const password = randomBytes(16).toString('base64url')
-      await createAccountAndSignIn(email, password)
+      const { hxCookies } = await createAccountAndSignIn(email, password)
       const userId = await hashEmail(email)
       const token = await createSession({ email: email.toLowerCase().trim(), userId, userHash: userId })
       const res = NextResponse.json({ success: true, isNewAccount: true })
       res.cookies.set(SESSION_COOKIE, token, SESSION_COOKIE_OPTS)
+      forwardHxCookies(res, hxCookies)
       return res
     } catch { /* account exists — fall through to OTP */ }
 
