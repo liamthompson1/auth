@@ -238,11 +238,21 @@ function StepHeading({ title, sub }: { title: string; sub?: string }) {
   )
 }
 
+function Spinner() {
+  return (
+    <span
+      role="status"
+      aria-label="Loading"
+      className="inline-block h-5 w-5 rounded-full border-2 border-current border-r-transparent animate-spin"
+    />
+  )
+}
+
 function PrimaryBtn({ label, loading, disabled, onClick }: { label: string; loading: boolean; disabled?: boolean; onClick?: () => void }) {
   return (
     <button type={onClick ? 'button' : 'submit'} onClick={onClick} disabled={disabled ?? loading}
-      className="w-full rounded-xl bg-[#542E91] hover:bg-[#3E226A] active:bg-[#2E194F] disabled:opacity-50 text-white text-base font-bold h-[54px] transition-colors duration-150 cursor-pointer disabled:cursor-not-allowed">
-      {loading ? '…' : label}
+      className="w-full flex items-center justify-center rounded-xl bg-[#542E91] hover:bg-[#3E226A] active:bg-[#2E194F] disabled:opacity-50 text-white text-base font-bold h-[54px] transition-colors duration-150 cursor-pointer disabled:cursor-not-allowed">
+      {loading ? <Spinner /> : label}
     </button>
   )
 }
@@ -250,8 +260,8 @@ function PrimaryBtn({ label, loading, disabled, onClick }: { label: string; load
 function OutlineBtn({ label, loading, disabled, onClick }: { label: string; loading: boolean; disabled?: boolean; onClick?: () => void }) {
   return (
     <button type="button" onClick={onClick} disabled={disabled ?? loading}
-      className="w-full rounded-xl border-2 border-[#542E91] text-[#542E91] text-base font-bold h-[54px] hover:bg-[#F5F0FF] disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-150">
-      {loading ? '…' : label}
+      className="w-full flex items-center justify-center rounded-xl border-2 border-[#542E91] text-[#542E91] text-base font-bold h-[54px] hover:bg-[#F5F0FF] disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-150">
+      {loading ? <Spinner /> : label}
     </button>
   )
 }
