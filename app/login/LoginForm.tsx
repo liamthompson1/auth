@@ -117,10 +117,14 @@ function LoginContent() {
       })
       const data = await res.json()
       if (!res.ok || !data.success) {
-        if (data.isNewAccount) { await onAuthenticated(); return }
+        // OTP couldn't be sent — fall back to password
         transitionTo('passwordFallback'); return
       }
-      if (data.isNewAccount) { await onAuthenticated(); return }
+      if (data.isNewAccount) {
+        // New account: HX session is already established by request-otp.
+        // Collect optional profile info before redirecting to returnTo.
+        transitionTo('profile'); return
+      }
       setSmsSentTo(data.smsSentTo); startCountdown()
       setDigits(Array(OTP_LENGTH).fill('')); transitionTo('otp')
       setTimeout(() => digitRefs.current[0]?.focus(), 250)
