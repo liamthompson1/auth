@@ -233,7 +233,7 @@ const inputCls = [
 
 const inputErrorCls = 'border-[#FF5962] focus:border-[#FF5962] focus:shadow-[0_0_0_3px_rgba(255,89,98,0.12)]'
 
-function StepHeading({ title, sub }: { title: string; sub?: string }) {
+function StepHeading({ title, sub }: { title: string; sub?: React.ReactNode }) {
   return (
     <div className="mb-6">
       <h1 className="text-3xl font-extrabold text-[#542E91]">{title}</h1>
@@ -339,10 +339,11 @@ function OtpStep({ email, smsSentTo, digits, digitRefs, password, setPassword, l
   const otpComplete = digits.every(d => d !== '')
   return (
     <div className="space-y-4">
-      <StepHeading title="Check your inbox"
+      <StepHeading
+        title="One-time-passcode sent"
         sub={smsSentTo
-          ? `Code sent to ${email} and SMS ********${smsSentTo}`
-          : `Code sent to ${email} and your phone`} />
+          ? <>We&rsquo;ve sent your code to <strong>••••{smsSentTo}</strong> and <strong>{email}</strong></>
+          : <>We&rsquo;ve sent your code to <strong>{email}</strong></>} />
 
       <div>
         <div className={`flex gap-2 ${otpShake ? 'animate-shake' : ''}`}>
